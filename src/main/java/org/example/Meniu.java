@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class Meniu {
 
-    private final Map<Categorie, List<Produs>> produsePeCategorii = new HashMap<>();
+    public final Map<Categorie, List<Produs>> produsePeCategorii = new HashMap<>();
 
     // DTO(Data Transfer Object) simplu pentru serializare
     private static class ProductDTO {
