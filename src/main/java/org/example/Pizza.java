@@ -1,26 +1,57 @@
 package org.example;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Pizza extends Mancare {
+@Entity
+@DiscriminatorValue("PIZZA")
+public class Pizza extends Mancare {
 
-    private final String blat;
-    private final String sos;
-    private final List<String> toppinguri;
+    // Am scos 'final' pentru ca Hibernate sa poata popula campurile
+    private String blat;
+    private String sos;
+
+    // @ElementCollection spune Hibernate-ului sa creeze un tabel separat (ex: Pizza_toppinguri)
+    // pentru a stoca lista de string-uri.
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> toppinguri;
+
+    // Constructor gol obligatoriu pentru JPA
+    public Pizza() {
+    }
 
     private Pizza(Builder builder) {
         super(builder.nume, builder.pret, builder.gramaj, builder.vegetarian);
         this.blat = builder.blat;
         this.sos = builder.sos;
-        this.toppinguri = List.copyOf(builder.toppinguri);
+        // Folosim new ArrayList pentru a ne asigura ca lista e mutabila (Hibernate prefera asta)
+        this.toppinguri = new ArrayList<>(builder.toppinguri);
     }
 
     @Override
     public String detalii() {
-        return "Blat: " + blat + ", Sos: " + sos + ", Toppinguri: " + toppinguri;
+        return "Pizza (" + blat + ", " + sos + ") - " + toppinguri;
     }
 
+    // --- Getteri ---
+    public String getBlat() {
+        return blat;
+    }
+
+    public String getSos() {
+        return sos;
+    }
+
+    public List<String> getToppinguri() {
+        return toppinguri;
+    }
+
+    // --- Builder Pattern ---
     public static class Builder {
 
         private final String nume;
@@ -56,18 +87,4 @@ public final class Pizza extends Mancare {
             return new Pizza(this);
         }
     }
-
-    public String getBlat() {
-        return blat;
-    }
-
-    public String getSos() {
-        return sos;
-    }
-
-    public List<String> getToppinguri() {
-        return toppinguri;
-    }
-
-
 }

@@ -2,12 +2,13 @@ package org.example;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.*;
-
-import java.util.Optional;
 
 public class Meniu {
 
@@ -94,6 +95,57 @@ public class Meniu {
             System.err.println("Eroare la export JSON: " + e.getMessage());
             return false;  // A aparut o eroare la salvarea fisierului
         }
+    }
+
+    /**
+     * Importă produse dintr-un fișier JSON.
+     * Returnează o listă de obiecte Produs (Mancare/Bautura/Pizza) create din JSON.
+     */
+    public List<Produs> importFromJson(String path) {
+        List<Produs> produseImportate = new ArrayList<>();
+        Gson gson = new Gson();
+
+        try (FileReader reader = new FileReader(path)) {
+            // 1. Definim tipul de date din JSON: Map<String, List<ProductDTO>>
+            Type type = new TypeToken<Map<String, List<ProductDTO>>>(){}.getType();
+            Map<String, List<ProductDTO>> data = gson.fromJson(reader, type);
+
+            if (data == null) return produseImportate;
+
+            // 2. Iterăm prin categorii și convertim DTO -> Obiecte Reale
+            for (List<ProductDTO> dtos : data.values()) {
+                for (ProductDTO dto : dtos) {
+                    Produs produsReal = null;
+
+                    if ("Pizza".equals(dto.type)) {
+                        // Reconstruim Pizza folosind Builder
+                        // Atenție: JSON-ul s-ar putea să aibă null la unele câmpuri, le tratăm
+                        String blat = dto.blat != null ? dto.blat : "Normal";
+                        String sos = dto.sos != null ? dto.sos : "Rosii";
+
+                        Pizza.Builder builder = new Pizza.Builder(dto.nume, dto.pret, 0, false, blat, sos);
+                        if (dto.toppinguri != null) {
+                            for (String t : dto.toppinguri) builder.adaugaTopping(t);
+                        }
+                        produsReal = builder.build();
+                    }
+                    else if ("Mancare".equals(dto.type)) {
+                        produsReal = new Mancare(dto.nume, dto.pret, dto.gramaj != null ? dto.gramaj : 0, false);
+                    }
+                    else if ("Bautura".equals(dto.type)) {
+                        produsReal = new Bautura(dto.nume, dto.pret, dto.volum != null ? dto.volum : 0);
+                    }
+
+                    if (produsReal != null) {
+                        produseImportate.add(produsReal);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Eroare la import: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return produseImportate;
     }
 
     // Metoda pentru adaugarea unui produs în Meniu

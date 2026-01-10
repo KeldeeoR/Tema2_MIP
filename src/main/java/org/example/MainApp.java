@@ -8,9 +8,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-// Aceasta este clasa principala pentru JavaFX (Iterația 5)
+import java.io.File;
+import java.util.List;
+
+// Aceasta este clasa principala pentru JavaFX (Iterația 6 Finală - cu Meniu Import/Export)
 public class MainApp extends Application {
 
     // Componente UI pe care trebuie să le accesăm din diverse metode
@@ -25,20 +29,41 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // 1. Inițializare date (folosim ce ai scris la temele trecute)
+        // 1. Inițializare date
         meniu = new Meniu();
-        seedData(); // Populăm cu date de test
+        seedData(); // Populăm cu date din DB
 
-        // 2. Configurare Layout Principal (BorderPane conform cerinței)
+        // 2. Configurare Layout Principal
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
+
+        // =============================================================
+        //  NOU: BARA DE MENIU (Iterația 6)
+        // =============================================================
+        MenuBar menuBar = new MenuBar();
+        Menu fileMenu = new Menu("File");
+
+        MenuItem exportItem = new MenuItem("Export JSON...");
+        exportItem.setOnAction(e -> handleExport(primaryStage));
+
+        MenuItem importItem = new MenuItem("Import JSON...");
+        importItem.setOnAction(e -> handleImport(primaryStage));
+
+        fileMenu.getItems().addAll(exportItem, importItem);
+        menuBar.getMenus().add(fileMenu);
+
+        // Punem meniul sus de tot
+        VBox topContainer = new VBox(menuBar);
+        topContainer.setSpacing(10);
+        root.setTop(topContainer);
+        // =============================================================
 
         // --- PARTEA STÂNGĂ (Lista) ---
         productListView = new ListView<>();
         // Convertim lista din map-ul meniului într-o listă simplă pentru afișare
         refreshProductList();
 
-        // Listener pentru selecție (Reactivitate): Când userul alege un produs, actualizăm formularul
+        // Listener pentru selecție (Reactivitate)
         productListView.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showProductDetails(newValue)
         );
@@ -58,13 +83,12 @@ public class MainApp extends Application {
         // Creăm câmpurile formularului
         Label l1 = new Label("Nume Produs:");
         nameField = new TextField();
-        nameField.setEditable(false); // Numele e doar de citit momentan
+        nameField.setEditable(false);
 
         Label l2 = new Label("Preț (RON):");
         priceField = new TextField();
 
-        // Listener pe preț (Reactivitate bidirecțională simplificată)
-        // Dacă modific prețul în GUI, se modifică și în obiectul din memorie
+        // Listener pe preț
         priceField.textProperty().addListener((obs, oldText, newText) -> {
             Produs selected = productListView.getSelectionModel().getSelectedItem();
             if (selected != null && newText.matches("\\d+(\\.\\d+)?")) {
@@ -78,24 +102,73 @@ public class MainApp extends Application {
         Label l4 = new Label("Detalii Extra:");
         extraLabel = new Label("-");
 
-        // Adăugăm elementele în grilă (Coloana, Rândul)
+        // Adăugăm elementele în grilă
         formPane.add(l1, 0, 0); formPane.add(nameField, 1, 0);
         formPane.add(l2, 0, 1); formPane.add(priceField, 1, 1);
         formPane.add(l3, 0, 2); formPane.add(typeLabel, 1, 2);
         formPane.add(l4, 0, 3); formPane.add(extraLabel, 1, 3);
 
-        // Grupăm formularul într-un VBox cu titlu
+        // Grupăm formularul într-un VBox
         VBox centerPane = new VBox(new Label("Detalii Produs Selectat"), formPane);
         centerPane.setAlignment(Pos.TOP_CENTER);
-        centerPane.setPadding(new Insets(0, 0, 0, 20)); // Puțin spațiu la stânga
+        centerPane.setPadding(new Insets(0, 0, 0, 20));
 
         root.setCenter(centerPane);
 
         // 3. Configurare Scenă și Fereastră
-        Scene scene = new Scene(root, 800, 500);
-        primaryStage.setTitle("Restaurant Management System - Iterația 5");
+        Scene scene = new Scene(root, 800, 550); // Marit putin pentru a incapea meniul
+        primaryStage.setTitle("Restaurant Management System - Iterația 6 (DB + JSON)");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    // --- Metode pentru butoanele de meniu (Import/Export) ---
+
+    private void handleExport(Stage stage) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Salvează Meniu JSON");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        fileChooser.setInitialFileName("meniu_backup.json");
+
+        File file = fileChooser.showSaveDialog(stage);
+        if (file != null) {
+            boolean success = meniu.exportToJson(file.getAbsolutePath());
+            if (success) {
+                new Alert(Alert.AlertType.INFORMATION, "Meniu exportat cu succes!").show();
+            } else {
+                new Alert(Alert.AlertType.ERROR, "Eroare la export.").show();
+            }
+        }
+    }
+
+    private void handleImport(Stage stage) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Încarcă Meniu JSON");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            // 1. Citim produsele din fișier (logica e in Meniu.java)
+            List<Produs> produseNoi = meniu.importFromJson(file.getAbsolutePath());
+
+            if (!produseNoi.isEmpty()) {
+                // 2. Le salvăm în Baza de Date
+                ProdusRepository repo = new ProdusRepository();
+                int contor = 0;
+                for (Produs p : produseNoi) {
+                    repo.adaugaProdus(p);
+                    // Le adăugăm și în memorie (Meniu) ca să apară în listă imediat
+                    meniu.adaugaProdus(Categorie.FEL_PRINCIPAL, p);
+                    contor++;
+                }
+
+                // 3. Facem refresh la listă
+                refreshProductList();
+                new Alert(Alert.AlertType.INFORMATION, "S-au importat " + contor + " produse în Baza de Date!").show();
+            } else {
+                new Alert(Alert.AlertType.WARNING, "Fișierul pare gol sau invalid.").show();
+            }
+        }
     }
 
     // Metodă ajutătoare pentru a popula formularul din dreapta
@@ -123,22 +196,39 @@ public class MainApp extends Application {
         }
     }
 
-    // Metodă pentru a adăuga date de test (copiate din Main-ul vechi)
+    // Metodă pentru a adăuga date de test
     private void refreshProductList() {
         productListView.getItems().clear();
-        // Extragem toate produsele din toate categoriile într-o singură listă pentru GUI
-        // Notă: Asta e o soluție temporară, ideal am avea un filtru pe categorii
         for (var entry : meniu.produsePeCategorii.entrySet()) {
             productListView.getItems().addAll(entry.getValue());
         }
     }
 
     private void seedData() {
-        // Aceleași date ca în Tema 1
-        meniu.adaugaProdus(Categorie.FEL_PRINCIPAL, new Mancare("Pizza Margherita", 45, 450, true));
-        meniu.adaugaProdus(Categorie.FEL_PRINCIPAL, new Mancare("Spaghetti Carbonara", 40, 400, false));
-        meniu.adaugaProdus(Categorie.BAUTURI_RACORITOARE, new Bautura("Cola", 8, 330));
-        meniu.adaugaProdus(Categorie.DESERT, new Mancare("Tiramisu", 28, 250, true));
+        ProdusRepository repo = new ProdusRepository();
+
+        // 1. Încercăm să încărcăm produsele din baza de date
+        List<Produs> produseExistente = repo.incarcaToateProdusele();
+
+        // 2. Dacă baza e goală (prima rulare), o populăm noi
+        if (produseExistente.isEmpty()) {
+            System.out.println("Baza de date e goală. Se populează...");
+
+            repo.adaugaProdus(new Mancare("Pizza Margherita", 45, 450, true));
+            repo.adaugaProdus(new Mancare("Spaghetti Carbonara", 40, 400, false));
+            repo.adaugaProdus(new Bautura("Cola", 8, 330));
+            repo.adaugaProdus(new Mancare("Tiramisu", 28, 250, true));
+
+            // Le reîncărcăm ca să fim siguri că avem datele salvate
+            produseExistente = repo.incarcaToateProdusele();
+        } else {
+            System.out.println("S-au încărcat " + produseExistente.size() + " produse din baza de date.");
+        }
+
+        // 3. Adăugăm produsele încărcate în meniul aplicației pentru afișare
+        for (Produs p : produseExistente) {
+            meniu.adaugaProdus(Categorie.FEL_PRINCIPAL, p);
+        }
     }
 
     // Metoda main pentru lansare
