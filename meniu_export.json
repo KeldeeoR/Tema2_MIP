@@ -1,0 +1,155 @@
+{
+  "APERITIVE": [
+    {
+      "type": "Mancare",
+      "nume": "Bruschette cu roșii",
+      "pret": 15.0,
+      "gramaj": 150.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Hummus cu pita",
+      "pret": 18.0,
+      "gramaj": 120.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Aripioare de pui",
+      "pret": 22.0,
+      "gramaj": 180.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Sufleu de brânză",
+      "pret": 20.0,
+      "gramaj": 160.0
+    }
+  ],
+  "FEL_PRINCIPAL": [
+    {
+      "type": "Pizza",
+      "nume": "Pizza Margherita",
+      "pret": 45.0,
+      "toppinguri": [
+        "Mozzarella",
+        "Busuioc"
+      ],
+      "blat": "Subtire",
+      "sos": "Rosii"
+    },
+    {
+      "type": "Pizza",
+      "nume": "Pizza Quattro Stagioni",
+      "pret": 50.0,
+      "toppinguri": [
+        "Mozzarella",
+        "Ciuperci",
+        "Salam"
+      ],
+      "blat": "Pufos",
+      "sos": "Rosii"
+    },
+    {
+      "type": "Mancare",
+      "nume": "Lasagna Bolognese",
+      "pret": 35.0,
+      "gramaj": 350.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Spaghetti Carbonara",
+      "pret": 40.0,
+      "gramaj": 400.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Risotto cu ciuperci",
+      "pret": 45.0,
+      "gramaj": 450.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Pasta Arrabiata",
+      "pret": 38.0,
+      "gramaj": 420.0
+    }
+  ],
+  "DESERT": [
+    {
+      "type": "Mancare",
+      "nume": "Clatite cu ciocolata",
+      "pret": 25.0,
+      "gramaj": 200.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Tiramisu",
+      "pret": 28.0,
+      "gramaj": 250.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Cheesecake",
+      "pret": 30.0,
+      "gramaj": 220.0
+    },
+    {
+      "type": "Mancare",
+      "nume": "Clatite cu gem",
+      "pret": 20.0,
+      "gramaj": 180.0
+    }
+  ],
+  "BAUTURI_RACORITOARE": [
+    {
+      "type": "Bautura",
+      "nume": "Cola",
+      "pret": 8.0,
+      "volum": 330.0
+    },
+    {
+      "type": "Bautura",
+      "nume": "Fanta",
+      "pret": 7.5,
+      "volum": 330.0
+    },
+    {
+      "type": "Bautura",
+      "nume": "Sprite",
+      "pret": 7.5,
+      "volum": 330.0
+    },
+    {
+      "type": "Bautura",
+      "nume": "Apa minerala",
+      "pret": 5.0,
+      "volum": 500.0
+    }
+  ],
+  "BAUTURI_ALCOOLICE": [
+    {
+      "type": "Bautura",
+      "nume": "Vin roșu",
+      "pret": 40.0,
+      "volum": 750.0
+    },
+    {
+      "type": "Bautura",
+      "nume": "Bere lager",
+      "pret": 12.0,
+      "volum": 500.0
+    },
+    {
+      "type": "Bautura",
+      "nume": "Gin",
+      "pret": 35.0,
+      "volum": 700.0
+    },
+    {
+      "type": "Bautura",
+      "nume": "Whisky",
+      "pret": 60.0,
+      "volum": 700.0
+    }
+  ]
+}
