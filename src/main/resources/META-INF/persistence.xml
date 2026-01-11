@@ -12,6 +12,10 @@
         <class>org.example.Mancare</class>
         <class>org.example.Bautura</class>
         <class>org.example.Pizza</class>
+        <class>org.example.User</class>
+        <class>org.example.Masa</class>
+        <class>org.example.Comanda</class>
+        <class>org.example.ComandaItem</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
