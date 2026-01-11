@@ -27,6 +27,9 @@ public class StaffView {
     private Label offersLabel;
     private Label detailName, detailPrice, detailExtra;
 
+    // Listă pentru istoric, ca să o putem actualiza din Thread
+    private ListView<String> historyListView;
+
     public StaffView(Stage stage, User ospatar, Meniu meniu) {
         this.stage = stage;
         this.ospatar = ospatar;
@@ -41,8 +44,9 @@ public class StaffView {
         Tab historyTab = new Tab("Istoricul Meu", createMyHistoryContent());
         historyTab.setClosable(false);
 
+        // Când dăm click pe tab-ul Istoric, pornim încărcarea în fundal
         historyTab.setOnSelectionChanged(e -> {
-            if (historyTab.isSelected()) historyTab.setContent(createMyHistoryContent());
+            if (historyTab.isSelected()) loadHistoryData();
         });
 
         tabPane.getTabs().addAll(tablesTab, historyTab);
@@ -88,61 +92,88 @@ public class StaffView {
         return content;
     }
 
-    // --- REPARATIE ISTORIC: GRUPARE VIZUALĂ (AGREGARE) ---
+    // --- ITERATIA 8: SETUP UI ISTORIC ---
     private VBox createMyHistoryContent() {
-        VBox content = new VBox(10); content.setPadding(new Insets(15));
-        ListView<String> myHistoryList = new ListView<>();
-        List<Comanda> myOrders = repo.getToateComenzile().stream()
-                .filter(c -> c.getOspatar() != null && c.getOspatar().getUsername().equals(ospatar.getUsername()) && c.isFinalizata())
-                .collect(Collectors.toList());
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
 
-        if (myOrders.isEmpty()) {
-            myHistoryList.getItems().add("Nu ai comenzi finalizate.");
-        } else {
-            for (Comanda c : myOrders) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("=== [Masa %d]  %s ===\n", c.getMasa().getNumarMasa(), c.getDataOra().toString().substring(0, 16)));
+        historyListView = new ListView<>();
+        VBox.setVgrow(historyListView, Priority.ALWAYS);
 
-                // 1. Agregăm produsele (Grupăm după nume)
-                Map<String, Integer> counts = new HashMap<>();
-                Map<String, Double> unitPrices = new HashMap<>();
+        // Datele se vor încărca prin metoda loadHistoryData() apelată la selectarea tab-ului
+        historyListView.getItems().add("Selectează tab-ul pentru a încărca datele...");
 
-                for (ComandaItem item : c.getItems()) {
-                    String name = item.getProdus().getNume();
-                    counts.put(name, counts.getOrDefault(name, 0) + item.getCantitate());
-                    unitPrices.put(name, item.getProdus().getPret());
-                }
+        content.getChildren().addAll(new Label("Istoricul meu (Finalizat):"), historyListView);
+        return content;
+    }
 
-                // 2. Afișăm lista agregată
-                for (String name : counts.keySet()) {
-                    int qty = counts.get(name);
-                    double price = unitPrices.get(name);
-                    double totalLine = qty * price;
-                    sb.append(String.format("   %-20s x %d  (%.2f RON/buc) = %.2f RON\n", name, qty, price, totalLine));
-                }
+    // --- ITERATIA 8: ÎNCĂRCARE ASINCRONĂ (CONCURRENȚĂ) ---
+    private void loadHistoryData() {
+        if (historyListView == null) return;
 
-                // 3. Calculăm și afișăm ofertele
-                double subtotal = c.calculeazaTotal();
-                double reducere = subtotal - c.getTotalPlata();
+        // 1. Definim Task-ul care rulează pe alt thread
+        javafx.concurrent.Task<List<Comanda>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Comanda> call() throws Exception {
+                // Simulam o întârziere artificială cerută de barem (Thread.sleep)
+                // Ca să se vadă textul "Se încarcă..."
+                Thread.sleep(1000);
 
-                if (reducere > 0.01) {
-                    sb.append(String.format("\n   Subtotal: %.2f RON\n", subtotal));
-                    sb.append(String.format("   REDUCERI: -%.2f RON\n", reducere));
+                // Încărcăm datele grele din DB
+                return repo.getToateComenzile().stream()
+                        .filter(c -> c.getOspatar() != null &&
+                                c.getOspatar().getUsername().equals(ospatar.getUsername()) &&
+                                c.isFinalizata())
+                        .collect(Collectors.toList());
+            }
+        };
 
-                    // Afișăm numele ofertelor aplicabile
-                    for(OfferStrategy s : OfferManager.getInstance().getActiveOffers()) {
-                        if(s.calculeazaReducere(c) > 0) {
-                            sb.append("     * " + s.getNumeOferta() + "\n");
+        // 2. Ce facem când începe? (UI Thread)
+        task.setOnRunning(e -> {
+            historyListView.getItems().clear();
+            historyListView.getItems().add("⏳ Se încarcă istoricul... Vă rugăm așteptați.");
+        });
+
+        // 3. Ce facem când termină cu succes? (UI Thread)
+        task.setOnSucceeded(e -> {
+            historyListView.getItems().clear();
+            List<Comanda> myOrders = task.getValue();
+
+            if (myOrders.isEmpty()) {
+                historyListView.getItems().add("Nu ai comenzi finalizate.");
+            } else {
+                for (Comanda c : myOrders) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(String.format("=== [Masa %d] %s ===\n", c.getMasa().getNumarMasa(), c.getDataOra().toString().substring(0, 16)));
+
+                    // Afișare simplă, datele sunt deja corecte în Comanda.java
+                    for (ComandaItem item : c.getItems()) {
+                        sb.append(String.format("   %s x %d  (%.2f RON/buc)\n", item.getProdus().getNume(), item.getCantitate(), item.getProdus().getPret()));
+                    }
+
+                    double subtotal = c.calculeazaTotal();
+                    double reducere = subtotal - c.getTotalPlata();
+                    if (reducere > 0.01) {
+                        sb.append(String.format("\n   Subtotal: %.2f RON | Reduceri: -%.2f RON\n", subtotal, reducere));
+                        for(OfferStrategy s : OfferManager.getInstance().getActiveOffers()) {
+                            if(s.calculeazaReducere(c) > 0.01) sb.append("     * " + s.getNumeOferta() + "\n");
                         }
                     }
+                    sb.append(String.format("TOTAL FINAL: %.2f RON\n", c.getTotalPlata()));
+                    historyListView.getItems().add(sb.toString());
                 }
-
-                sb.append(String.format("TOTAL FINAL: %.2f RON\n", c.getTotalPlata()));
-                myHistoryList.getItems().add(sb.toString());
             }
-        }
-        content.getChildren().addAll(new Label("Istoricul meu (Agregat):"), myHistoryList);
-        return content;
+        });
+
+        // 4. Ce facem dacă dă eroare?
+        task.setOnFailed(e -> {
+            historyListView.getItems().clear();
+            historyListView.getItems().add("❌ Eroare la conexiunea cu baza de date!");
+            task.getException().printStackTrace();
+        });
+
+        // 5. Pornim firul de execuție
+        new Thread(task).start();
     }
 
     private void openOrderScreen(Masa masa) {
@@ -221,14 +252,11 @@ public class StaffView {
         if (totalReducere > 0.01) {
             offersText.append("Oferte APLICATE: ");
             for (OfferStrategy s : OfferManager.getInstance().getActiveOffers()) {
-                if(s.calculeazaReducere(comandaCurenta) > 0.01) {
+                if (s.calculeazaReducere(comandaCurenta) > 0.01) {
                     offersText.append(s.getNumeOferta()).append(", ");
                 }
             }
-            // Scoatem ultima virgula
-            if(offersText.toString().endsWith(", ")) {
-                offersText.setLength(offersText.length() - 2);
-            }
+            if(offersText.toString().endsWith(", ")) offersText.setLength(offersText.length() - 2);
         } else {
             offersText.append("");
         }
