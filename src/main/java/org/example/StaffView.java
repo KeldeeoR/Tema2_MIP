@@ -27,7 +27,6 @@ public class StaffView {
     private Label offersLabel;
     private Label detailName, detailPrice, detailExtra;
 
-    // Listă pentru istoric, ca să o putem actualiza din Thread
     private ListView<String> historyListView;
 
     public StaffView(Stage stage, User ospatar, Meniu meniu) {
@@ -44,7 +43,6 @@ public class StaffView {
         Tab historyTab = new Tab("Istoricul Meu", createMyHistoryContent());
         historyTab.setClosable(false);
 
-        // Când dăm click pe tab-ul Istoric, pornim încărcarea în fundal
         historyTab.setOnSelectionChanged(e -> {
             if (historyTab.isSelected()) loadHistoryData();
         });
@@ -92,7 +90,6 @@ public class StaffView {
         return content;
     }
 
-    // --- ITERATIA 8: SETUP UI ISTORIC ---
     private VBox createMyHistoryContent() {
         VBox content = new VBox(10);
         content.setPadding(new Insets(15));
@@ -100,26 +97,21 @@ public class StaffView {
         historyListView = new ListView<>();
         VBox.setVgrow(historyListView, Priority.ALWAYS);
 
-        // Datele se vor încărca prin metoda loadHistoryData() apelată la selectarea tab-ului
         historyListView.getItems().add("Selectează tab-ul pentru a încărca datele...");
 
         content.getChildren().addAll(new Label("Istoricul meu (Finalizat):"), historyListView);
         return content;
     }
 
-    // --- ITERATIA 8: ÎNCĂRCARE ASINCRONĂ (CONCURRENȚĂ) ---
     private void loadHistoryData() {
         if (historyListView == null) return;
 
-        // 1. Definim Task-ul care rulează pe alt thread
         javafx.concurrent.Task<List<Comanda>> task = new javafx.concurrent.Task<>() {
             @Override
             protected List<Comanda> call() throws Exception {
-                // Simulam o întârziere artificială cerută de barem (Thread.sleep)
-                // Ca să se vadă textul "Se încarcă..."
+
                 Thread.sleep(1000);
 
-                // Încărcăm datele grele din DB
                 return repo.getToateComenzile().stream()
                         .filter(c -> c.getOspatar() != null &&
                                 c.getOspatar().getUsername().equals(ospatar.getUsername()) &&
@@ -128,13 +120,11 @@ public class StaffView {
             }
         };
 
-        // 2. Ce facem când începe? (UI Thread)
         task.setOnRunning(e -> {
             historyListView.getItems().clear();
             historyListView.getItems().add("⏳ Se încarcă istoricul... Vă rugăm așteptați.");
         });
 
-        // 3. Ce facem când termină cu succes? (UI Thread)
         task.setOnSucceeded(e -> {
             historyListView.getItems().clear();
             List<Comanda> myOrders = task.getValue();
@@ -146,7 +136,6 @@ public class StaffView {
                     StringBuilder sb = new StringBuilder();
                     sb.append(String.format("=== [Masa %d] %s ===\n", c.getMasa().getNumarMasa(), c.getDataOra().toString().substring(0, 16)));
 
-                    // Afișare simplă, datele sunt deja corecte în Comanda.java
                     for (ComandaItem item : c.getItems()) {
                         sb.append(String.format("   %s x %d  (%.2f RON/buc)\n", item.getProdus().getNume(), item.getCantitate(), item.getProdus().getPret()));
                     }
@@ -165,14 +154,12 @@ public class StaffView {
             }
         });
 
-        // 4. Ce facem dacă dă eroare?
         task.setOnFailed(e -> {
             historyListView.getItems().clear();
             historyListView.getItems().add("❌ Eroare la conexiunea cu baza de date!");
             task.getException().printStackTrace();
         });
 
-        // 5. Pornim firul de execuție
         new Thread(task).start();
     }
 

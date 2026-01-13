@@ -11,20 +11,14 @@ public class HappyHourStrategy implements OfferStrategy {
 
         for (ComandaItem item : comanda.getItems()) {
             if (item.getProdus() instanceof Bautura) {
-                // Dacă avem cantitate 3, adăugăm prețul de 3 ori în listă
                 for (int i = 0; i < item.getCantitate(); i++) {
                     preturiBauturi.add(item.getProdus().getPret());
                 }
             }
         }
-
-        // Sortăm descrescător ca să reducem băuturile cele mai ieftine (sau scumpe?
-        // Barem: "Fiecare a doua băutură". De obicei se reduce cea mai ieftină,
-        // dar pentru simplitate reducem în ordinea listei sortate).
         preturiBauturi.sort(Comparator.reverseOrder());
 
         double reducereTotala = 0;
-        // Aplicăm reducerea la fiecare a doua băutură (index 1, 3, 5...)
         for (int i = 1; i < preturiBauturi.size(); i += 2) {
             reducereTotala += preturiBauturi.get(i) * 0.5;
         }

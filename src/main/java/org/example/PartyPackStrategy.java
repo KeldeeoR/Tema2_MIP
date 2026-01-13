@@ -19,10 +19,8 @@ public class PartyPackStrategy implements OfferStrategy {
 
         if (preturiPizza.size() < 4) return 0.0;
 
-        // Sortăm crescător (cea mai ieftină e prima)
         Collections.sort(preturiPizza);
 
-        // Câte pizza gratis? Una la fiecare 4.
         int pizzaGratis = preturiPizza.size() / 4;
 
         double reducere = 0;

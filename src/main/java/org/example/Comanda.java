@@ -31,17 +31,13 @@ public class Comanda {
         this.finalizata = false;
     }
 
-    // --- REPARATIA PENTRU "SPAM" (Pizza x4 in loc de Pizza x1, x1, x1, x1) ---
     public void adaugaProdus(Produs produs, int cantitate) {
-        // Caută dacă produsul există deja în comandă
         for (ComandaItem item : items) {
             if (item.getProdus().getId().equals(produs.getId())) {
-                // Actualizează cantitatea existentă
                 item.setCantitate(item.getCantitate() + cantitate);
                 return;
             }
         }
-        // Dacă nu există, adaugă item nou
         ComandaItem item = new ComandaItem(produs, cantitate);
         items.add(item);
     }
@@ -50,7 +46,6 @@ public class Comanda {
         return items.stream().mapToDouble(ComandaItem::getSubtotal).sum();
     }
 
-    // Getteri si Setteri
     public List<ComandaItem> getItems() { return items; }
     public void setOspatar(User ospatar) { this.ospatar = ospatar; }
     public void setMasa(Masa masa) { this.masa = masa; }

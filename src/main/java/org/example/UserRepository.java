@@ -17,7 +17,6 @@ public class UserRepository {
         }
     }
 
-    // Metoda pentru a crea un user nou (folosită de Admin sau la seed)
     public void adaugaUser(User user) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -34,7 +33,6 @@ public class UserRepository {
         }
     }
 
-    // Metoda de Login: Caută userul după username și parolă
     public Optional<User> login(String username, String password) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -51,17 +49,15 @@ public class UserRepository {
         }
     }
 
-    // Metoda nouă pentru ștergerea unui user (Admin)
     public void stergeUser(String username) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
-            // Căutăm userul după nume ca să avem obiectul complet
             User user = em.createQuery("SELECT u FROM User u WHERE u.username = :nume", User.class)
                     .setParameter("nume", username)
                     .getSingleResult();
 
-            em.remove(user); // Ștergem
+            em.remove(user);
             em.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,7 +69,6 @@ public class UserRepository {
         }
     }
 
-    // Metoda ajutătoare pentru a lua toți userii (pentru lista din Admin)
     public java.util.List<User> getAllUsers() {
         EntityManager em = emf.createEntityManager();
         try {

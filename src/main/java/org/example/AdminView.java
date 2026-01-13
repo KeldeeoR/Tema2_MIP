@@ -180,7 +180,6 @@ public class AdminView {
     private Pane createHistoryPane() {
         BorderPane pane = new BorderPane(); pane.setPadding(new Insets(15));
         historyList = new ListView<>();
-        // FIX FULLSCREEN
         VBox.setVgrow(historyList, Priority.ALWAYS);
         refreshHistoryList();
         pane.setCenter(historyList);
@@ -188,7 +187,6 @@ public class AdminView {
         return pane;
     }
 
-    // --- ISTORIC ADMIN (AGREGAT) ---
     private void refreshHistoryList() {
         if (historyList == null) return;
         javafx.concurrent.Task<List<Comanda>> loadTask = new javafx.concurrent.Task<>() {
@@ -212,7 +210,6 @@ public class AdminView {
                     StringBuilder sb = new StringBuilder();
                     sb.append(String.format("Masa %d | %s | %s\n", c.getMasa().getNumarMasa(), ospatarName, c.getDataOra().toString().substring(0, 16)));
 
-                    // 1. Agregare vizuala Admin
                     Map<String, Integer> counts = new HashMap<>();
                     Map<String, Double> prices = new HashMap<>();
                     for (ComandaItem item : c.getItems()) {

@@ -22,9 +22,6 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    // --- MODIFICARE CHEIE PENTRU BAREM (Cascade) ---
-    // mappedBy = "ospatar" se referă la câmpul 'ospatar' din clasa Comanda.
-    // cascade = CascadeType.ALL înseamnă că dacă ștergem User-ul, se șterg și comenzile.
     @OneToMany(mappedBy = "ospatar", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Comanda> comenzi = new ArrayList<>();
 
@@ -36,13 +33,11 @@ public class User {
         this.role = role;
     }
 
-    // Getteri si Setteri
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public Role getRole() { return role; }
 
-    // Nu e nevoie de setter explicit pentru listă, Hibernate o gestionează
     public List<Comanda> getComenzi() { return comenzi; }
 
     public void setUsername(String username) { this.username = username; }

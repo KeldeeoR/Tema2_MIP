@@ -15,7 +15,6 @@ public class Meniu {
 
     public final Map<Categorie, List<Produs>> produsePeCategorii = new HashMap<>();
 
-    // DTO pentru JSON
     private static class ProductDTO {
         String type, nume, blat, sos;
         double pret;
@@ -28,7 +27,6 @@ public class Meniu {
     }
 
     public Meniu() {
-        // Initializam categoriile goale
         for (Categorie c : Categorie.values()) {
             produsePeCategorii.put(c, new ArrayList<>());
         }
@@ -38,7 +36,6 @@ public class Meniu {
         produsePeCategorii.computeIfAbsent(cat, k -> new ArrayList<>()).add(p);
     }
 
-    // --- CERINȚA BAREM: Căutare cu Optional ---
     public Optional<Produs> cautaProdus(String nume) {
         return produsePeCategorii.values().stream()
                 .flatMap(List::stream)
@@ -46,24 +43,19 @@ public class Meniu {
                 .findFirst();
     }
 
-    // --- CERINȚA BAREM: Filtrare cu Streams API ---
     public List<Produs> filtreazaProduse(String cautare, Double pretMin, Double pretMax, String tip, boolean doarVegetarian) {
         return produsePeCategorii.values().stream()
                 .flatMap(List::stream)
                 .filter(p -> {
-                    // 1. Filtru Nume
                     if (cautare != null && !cautare.isEmpty() && !p.getNume().toLowerCase().contains(cautare.toLowerCase())) {
                         return false;
                     }
-                    // 2. Filtru Pret
                     if (pretMin != null && p.getPret() < pretMin) return false;
                     if (pretMax != null && p.getPret() > pretMax) return false;
 
-                    // 3. Filtru Tip
                     if ("Mancare".equals(tip) && !(p instanceof Mancare)) return false;
                     if ("Bautura".equals(tip) && !(p instanceof Bautura)) return false;
 
-                    // 4. Filtru Vegetarian
                     if (doarVegetarian) {
                         return (p instanceof Mancare) && ((Mancare) p).isVegetarian();
                     }
@@ -72,7 +64,6 @@ public class Meniu {
                 .collect(Collectors.toList());
     }
 
-    // --- IMPORT / EXPORT JSON (Pentru Admin) ---
     public boolean exportToJson(String path) {
         Map<String, List<ProductDTO>> serial = new LinkedHashMap<>();
         for (Categorie c : Categorie.values()) serial.put(c.name(), new ArrayList<>());

@@ -9,8 +9,6 @@ public class OfferManager {
 
     private OfferManager() {
         this.activeOffers = new ArrayList<>();
-        // Implicit putem activa o ofertă, sau le lăsăm dezactivate
-        // this.activeOffers.add(new PartyPackStrategy());
     }
 
     public static OfferManager getInstance() {
@@ -21,7 +19,6 @@ public class OfferManager {
     }
 
     public void enableOffer(OfferStrategy strategy) {
-        // Evităm duplicatele: ștergem dacă există deja un tip similar
         disableOffer(strategy.getClass());
         activeOffers.add(strategy);
     }
@@ -34,7 +31,6 @@ public class OfferManager {
         return activeOffers;
     }
 
-    // --- ACEASTA ESTE METODA CARE ÎȚI LIPSEA ---
     public double aplicaOferte(Comanda comanda) {
         double totalReducere = 0.0;
         for (OfferStrategy strategy : activeOffers) {

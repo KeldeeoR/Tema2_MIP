@@ -9,10 +9,6 @@ import java.io.FileReader;
 
 public class ConfigLoader {
 
-    /**
-     * Incarca config.json și returneaza un obiect AppConfig.
-     * Arunca exceptii daca fișierul lipseste sau este corupt.
-     */
     public static AppConfig load(String path) throws FileNotFoundException, JsonSyntaxException {
 
         File f = new File(path);
@@ -21,7 +17,6 @@ public class ConfigLoader {
             throw new FileNotFoundException("Fisierul de configurare '" + path + "' nu exista.");
         }
 
-        // Parsam JSON-ul (poate arunca JsonSyntaxException)
         Gson gson = new Gson();
         FileReader reader = new FileReader(f);
 

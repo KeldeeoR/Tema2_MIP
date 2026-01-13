@@ -20,7 +20,6 @@ public class Masa {
         this.esteOcupata = false;
     }
 
-    // Getteri si Setteri
     public Long getId() { return id; }
     public int getNumarMasa() { return numarMasa; }
     public boolean isEsteOcupata() { return esteOcupata; }

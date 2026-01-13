@@ -9,7 +9,6 @@ public class ComandaRepository {
 
     private static EntityManagerFactory emf = Persistence.createEntityManagerFactory("restaurantPU");
 
-    // --- MESE ---
     public void salveazaMasa(Masa masa) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
@@ -33,7 +32,6 @@ public class ComandaRepository {
         em.close();
     }
 
-    // --- COMENZI ---
     public void salveazaComanda(Comanda comanda) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -54,8 +52,6 @@ public class ComandaRepository {
         return list;
     }
 
-    // --- Metoda nouă pentru Iterația 7 (Staff) ---
-    // Caută o comandă deschisă (nefinalizată) pentru o anumită masă
     public Comanda gasesteComandaActiva(Masa masa) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -64,17 +60,15 @@ public class ComandaRepository {
                     .setParameter("masaId", masa.getId())
                     .getSingleResult();
         } catch (Exception e) {
-            return null; // Nu există comandă activă
+            return null;
         } finally {
             em.close();
         }
     }
 
-    // Metoda nouă pentru Istoric (Admin)
     public List<Comanda> getToateComenzile() {
         EntityManager em = emf.createEntityManager();
         try {
-            // "FETCH JOIN" încarcă și userul asociat ca să îi vedem numele
             return em.createQuery(
                             "SELECT c FROM Comanda c JOIN FETCH c.ospatar ORDER BY c.dataOra DESC", Comanda.class)
                     .getResultList();

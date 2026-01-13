@@ -11,7 +11,6 @@ public class ProdusRepository {
 
     public ProdusRepository() {
         if (emf == null) {
-            // "restaurantPU" trebuie să fie exact numele din persistence.xml
             emf = Persistence.createEntityManagerFactory("restaurantPU");
         }
     }
@@ -41,12 +40,10 @@ public class ProdusRepository {
         }
     }
 
-    // Metoda pentru ștergerea unui produs (Admin)
     public void stergeProdus(Produs produs) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
-            // Trebuie să dăm "merge" întâi pentru a atașa obiectul la sesiunea curentă, apoi remove
             Produs deSters = em.merge(produs);
             em.remove(deSters);
             em.getTransaction().commit();
@@ -58,12 +55,11 @@ public class ProdusRepository {
         }
     }
 
-    // Metoda nouă pentru EDITARE (Admin)
     public void actualizeazaProdus(Produs produs) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
-            em.merge(produs); // Merge face update dacă ID-ul există
+            em.merge(produs);
             em.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();

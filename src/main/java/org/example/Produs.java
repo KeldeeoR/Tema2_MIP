@@ -34,8 +34,6 @@ public abstract class Produs {
         return nume + " - " + pret + " RON";
     }
 
-    // --- REPARAȚIA CRITICĂ PENTRU DUPLICARE ---
-    // Fără asta, Java crede că fiecare click pe "Pizza" e un produs nou
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

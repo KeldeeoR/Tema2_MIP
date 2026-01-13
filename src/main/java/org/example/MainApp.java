@@ -26,7 +26,7 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         meniu = new Meniu();
-        seedData(); // Populeaza DB si activeaza ofertele
+        seedData();
         LoginView loginView = new LoginView(primaryStage, this);
         loginView.show();
     }
@@ -44,11 +44,9 @@ public class MainApp extends Application {
             return;
         }
 
-        // --- GUEST MODE (Client) ---
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
 
-        // PARTEA DE SUS
         HBox topContainer = new HBox(10);
         topContainer.setAlignment(Pos.CENTER_LEFT);
         topContainer.setPadding(new Insets(0, 0, 10, 0));
@@ -65,7 +63,6 @@ public class MainApp extends Application {
         topContainer.getChildren().addAll(userLabel, spacer, exitBtn);
         root.setTop(topContainer);
 
-        // --- ZONA DE FILTRE (Guest) ---
         productListView = new ListView<>();
         refreshProductList();
 
@@ -156,8 +153,6 @@ public class MainApp extends Application {
     }
 
     private void seedData() {
-        // --- ACTIVAM OFERTELE DEFAULT ---
-        // Asta rezolva problema ca "nu apare textul ofertei", pentru ca lista era goala
         if(OfferManager.getInstance().getActiveOffers().isEmpty()) {
             OfferManager.getInstance().enableOffer(new HappyHourStrategy());
             OfferManager.getInstance().enableOffer(new MealDealStrategy());

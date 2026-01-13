@@ -12,16 +12,12 @@ import java.util.List;
 @DiscriminatorValue("PIZZA")
 public class Pizza extends Mancare {
 
-    // Am scos 'final' pentru ca Hibernate sa poata popula campurile
     private String blat;
     private String sos;
 
-    // @ElementCollection spune Hibernate-ului sa creeze un tabel separat (ex: Pizza_toppinguri)
-    // pentru a stoca lista de string-uri.
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> toppinguri;
 
-    // Constructor gol obligatoriu pentru JPA
     public Pizza() {
     }
 
@@ -29,7 +25,6 @@ public class Pizza extends Mancare {
         super(builder.nume, builder.pret, builder.gramaj, builder.vegetarian);
         this.blat = builder.blat;
         this.sos = builder.sos;
-        // Folosim new ArrayList pentru a ne asigura ca lista e mutabila (Hibernate prefera asta)
         this.toppinguri = new ArrayList<>(builder.toppinguri);
     }
 
@@ -38,7 +33,6 @@ public class Pizza extends Mancare {
         return "Pizza (" + blat + ", " + sos + ") - " + toppinguri;
     }
 
-    // --- Getteri ---
     public String getBlat() {
         return blat;
     }
@@ -51,7 +45,6 @@ public class Pizza extends Mancare {
         return toppinguri;
     }
 
-    // --- Builder Pattern ---
     public static class Builder {
 
         private final String nume;
